@@ -1,0 +1,35 @@
+<!-- To delete student data-->
+ <!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<title>Delete Student</title>
+</head>
+<body>
+<header class="site-header"><div class="brand-mark">SM</div><div><p class="eyebrow">STUDENT RECORDS</p><h1>DELETE STUDENT</h1></div></header>
+<nav class="main-nav" aria-label="Main navigation">
+<a href="index.html">Home</a><a href="list.html">List Students</a><a href="listOne.html">List Required Student</a><a href="insert.html">Insert Student</a><a href="update.html">Update Student</a><a href="delete.html">Delete Student</a>
+</nav>
+<section class="hero"><img class="page-image" src="assests/delete.jpg" alt="Illustration: Delete a student"/><div class="hero-copy"><h2>Delete a student</h2><p>Select the correct student before confirming deletion.</p></div></section>
+
+<section class="form-card">
+<div class="field-group"><label for="studentNameSelect">Student Name</label><select id="studentNameSelect" onchange="syncFromName()"><option value="">Loading student names...</option></select></div>
+<div class="field-group"><label for="studentNumberSelect">Student Number</label><select id="studentNumberSelect" onchange="syncFromNumber()"><option value="">Loading student numbers...</option></select></div>
+<br><br>
+<button class="danger-button" onclick="deleteStudent()">Delete Selected Student</button>
+</section>
+<br><br>
+<button onclick="location.href='index.html'">Home Page</button>
+
+<script>
+let studentsCache=[];function studentId(s){return s.sno??s.student_id;}function studentName(s){return s.name??s.student_name??'Student';}
+function loadStudentOptions(){fetch('/students').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(students=>{studentsCache=students;const ns=document.getElementById('studentNameSelect'),ids=document.getElementById('studentNumberSelect');ns.innerHTML='<option value="">Select student name</option>';ids.innerHTML='<option value="">Select student number</option>';students.forEach(st=>{const id=studentId(st),name=studentName(st);if(id==null)return;const a=document.createElement('option');a.value=id;a.textContent=name;ns.appendChild(a);const b=document.createElement('option');b.value=id;b.textContent=id;ids.appendChild(b);});}).catch(()=>{document.getElementById('studentNameSelect').innerHTML='<option value="">Unable to load students</option>';document.getElementById('studentNumberSelect').innerHTML='<option value="">Unable to load students</option>';});}
+function syncFromName(){document.getElementById('studentNumberSelect').value=document.getElementById('studentNameSelect').value;}
+function syncFromNumber(){document.getElementById('studentNameSelect').value=document.getElementById('studentNumberSelect').value;}
+function deleteStudent(){const sno=document.getElementById('studentNumberSelect').value;if(!sno){alert('Please select a student first.');return;}const st=studentsCache.find(x=>String(studentId(x))===String(sno));if(!confirm('Delete '+(st?studentName(st):'this student')+' (Student No. '+sno+')?'))return;fetch('/students/'+encodeURIComponent(sno),{method:'DELETE'}).then(async r=>{const msg=await r.text();if(!r.ok)throw new Error(msg);alert(msg);loadStudentOptions();document.getElementById('studentNameSelect').value='';document.getElementById('studentNumberSelect').value='';}).catch(e=>alert(e.message||'Unable to delete student.'));}
+loadStudentOptions();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!-- To list one student data -->
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<title>Search Student</title>
+</head>
+<body>
+<header class="site-header"><div class="brand-mark">SM</div><div><p class="eyebrow">STUDENT RECORDS</p><h1>SEARCH STUDENT</h1></div></header>
+<nav class="main-nav" aria-label="Main navigation">
+<a href="index.html">Home</a><a href="list.html">List Students</a><a href="listOne.html">List Required Student</a><a href="insert.html">Insert Student</a><a href="update.html">Update Student</a><a href="delete.html">Delete Student</a>
+</nav>
+<section class="hero"><img class="page-image" src="assests/search.jpg" alt="Illustration: Find a student"/><div class="hero-copy"><h2>Find a student</h2><p>Choose the student by name or student number.</p></div></section>
+
+
+<section class="form-card">
+<div class="field-group"><label for="studentNameSelect">Student Name</label><select id="studentNameSelect" onchange="syncFromName()"><option value="">Loading student names...</option></select></div>
+<div class="field-group"><label for="studentNumberSelect">Student Number</label><select id="studentNumberSelect" onchange="syncFromNumber()"><option value="">Loading student numbers...</option></select></div>
+<button class="primary-button" onclick="searchStudent()">View Student</button>
+</section>
+<table id="studentTable"><thead><tr><th>Student Number</th><th>Name</th><th>Class</th><th>Total Marks</th></tr></thead><tbody><tr><td colspan="4" class="empty-state">Select a student and choose View Student.</td></tr></tbody></table>
+
+<br>
+<button onclick="location.href='index.html'">Home Page</button>
+
+<script>
+let studentsCache=[];
+function studentId(s){return s.sno ?? s.student_id;}
+function studentName(s){return s.name ?? s.student_name ?? 'Student';}
+function loadStudentOptions(){fetch('/students').then(r=>{if(!r.ok)throw new Error('Unable to load students');return r.json();}).then(students=>{
+ studentsCache=students;const ns=document.getElementById('studentNameSelect'), ids=document.getElementById('studentNumberSelect');
+ ns.innerHTML='<option value="">Select student name</option>';ids.innerHTML='<option value="">Select student number</option>';
+ students.forEach(st=>{const id=studentId(st),name=studentName(st);if(id==null)return;const a=document.createElement('option');a.value=id;a.textContent=name;ns.appendChild(a);const b=document.createElement('option');b.value=id;b.textContent=id;ids.appendChild(b);});
+ }).catch(()=>{document.getElementById('studentNameSelect').innerHTML='<option value="">Unable to load students</option>';document.getElementById('studentNumberSelect').innerHTML='<option value="">Unable to load students</option>';});}
+function syncFromName(){document.getElementById('studentNumberSelect').value=document.getElementById('studentNameSelect').value;}
+function syncFromNumber(){document.getElementById('studentNameSelect').value=document.getElementById('studentNumberSelect').value;}
+function searchStudent(){const sno=document.getElementById('studentNumberSelect').value;if(!sno){alert('Please select a student name or number.');return;}fetch('/students/'+encodeURIComponent(sno)).then(r=>r.json()).then(data=>{const body=document.querySelector('#studentTable tbody');if(!data||data.length===0){body.innerHTML='<tr><td colspan="4" class="empty-state">Student not found.</td></tr>';return;}const st=data[0];body.innerHTML='';const row=document.createElement('tr');[studentId(st),studentName(st),st.class ?? st.class_name ?? st.course ?? '—',st.total ?? '—'].forEach(v=>{const td=document.createElement('td');td.textContent=v;row.appendChild(td);});body.appendChild(row);}).catch(()=>alert('Could not retrieve this student. Please check the server connection.'));}
+loadStudentOptions();
+</script>
+</body>
+</html>

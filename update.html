@@ -1,0 +1,37 @@
+<!-- UPDATE STUDENT DETAILS-->
+ <!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<title>Update Student</title>
+</head>
+<body>
+<header class="site-header"><div class="brand-mark">SM</div><div><p class="eyebrow">STUDENT RECORDS</p><h1>UPDATE STUDENT</h1></div></header>
+<nav class="main-nav" aria-label="Main navigation">
+<a href="index.html">Home</a><a href="list.html">List Students</a><a href="listOne.html">List Required Student</a><a href="insert.html">Insert Student</a><a href="update.html">Update Student</a><a href="delete.html">Delete Student</a>
+</nav>
+<section class="hero"><img class="page-image" src="assests/update.jpg" alt="Illustration: Update student details"/><div class="hero-copy"><h2>Update student details</h2><p>Select the student you want to edit.</p></div></section>
+
+<section class="form-card">
+<div class="field-group"><label for="studentNameSelect">Student Name</label><select id="studentNameSelect" onchange="syncFromName()"><option value="">Loading student names...</option></select></div>
+<div class="field-group"><label for="studentNumberSelect">Student Number</label><select id="studentNumberSelect" onchange="syncFromNumber()"><option value="">Loading student numbers...</option></select></div>
+<div class="field-group"><label for="name">Student Name</label><input type="text" id="name" placeholder="Student name"></div>
+<div class="field-group"><label for="total">Total Marks</label><input type="number" id="total" placeholder="Total marks"></div>
+<button class="primary-button" onclick="updateStudent()">Save Changes</button>
+</section>
+<br><br>
+<button onclick="location.href='index.html'">Home Page</button>
+
+<script>
+let studentsCache=[];function studentId(s){return s.sno??s.student_id;}function studentName(s){return s.name??s.student_name??'Student';}
+function loadStudentOptions(){fetch('/students').then(r=>{if(!r.ok)throw new Error();return r.json();}).then(students=>{studentsCache=students;const ns=document.getElementById('studentNameSelect'),ids=document.getElementById('studentNumberSelect');ns.innerHTML='<option value="">Select student name</option>';ids.innerHTML='<option value="">Select student number</option>';students.forEach(st=>{const id=studentId(st),name=studentName(st);if(id==null)return;let a=document.createElement('option');a.value=id;a.textContent=name;ns.appendChild(a);let b=document.createElement('option');b.value=id;b.textContent=id;ids.appendChild(b);});}).catch(()=>{document.getElementById('studentNameSelect').innerHTML='<option value="">Unable to load students</option>';document.getElementById('studentNumberSelect').innerHTML='<option value="">Unable to load students</option>';});}
+function loadSelectedDetails(id){const st=studentsCache.find(x=>String(studentId(x))===String(id));if(!st)return;document.getElementById('name').value=studentName(st);document.getElementById('total').value=st.total??'';}
+function syncFromName(){const id=document.getElementById('studentNameSelect').value;document.getElementById('studentNumberSelect').value=id;if(id)loadSelectedDetails(id);}
+function syncFromNumber(){const id=document.getElementById('studentNumberSelect').value;document.getElementById('studentNameSelect').value=id;if(id)loadSelectedDetails(id);}
+function updateStudent(){const sno=document.getElementById('studentNumberSelect').value,name=document.getElementById('name').value.trim(),total=document.getElementById('total').value;if(!sno){alert('Please select a student first.');return;}if(!name||total===''){alert('Please enter the student name and total marks.');return;}fetch('/students/'+encodeURIComponent(sno),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,total})}).then(async r=>{const msg=await r.text();if(!r.ok)throw new Error(msg);alert(msg);loadStudentOptions();}).catch(e=>alert(e.message||'Unable to update student.'));}
+loadStudentOptions();
+</script>
+</body>
+</html>

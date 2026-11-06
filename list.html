@@ -1,0 +1,66 @@
+<!-- To list all students data -->
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<title>List Students</title>
+</head>
+<body>
+<header class="site-header"><div class="brand-mark">SM</div><div><p class="eyebrow">STUDENT RECORDS</p><h1>LIST OF STUDENTS</h1></div></header>
+<nav class="main-nav" aria-label="Main navigation">
+<a href="index.html">Home</a><a href="list.html">List Students</a><a href="listOne.html">List Required Student</a><a href="insert.html">Insert Student</a><a href="update.html">Update Student</a><a href="delete.html">Delete Student</a>
+</nav>
+<section class="hero"><img class="page-image" src="assests/list.jpg" alt="Illustration: Student directory"/><div class="hero-copy"><h2>Student directory</h2><p>View student numbers, names and total marks.</p></div></section>
+
+<button onclick="loadStudents()">
+Refresh List
+</button>
+<br><br>
+<table border="1" id="studentTable">
+    <!--Following line is Optional -->
+<!--<tr>
+<th>Student Number</th>
+<th>Name</th>
+<th>Class</th>
+<th>Total Marks</th>
+</tr> -->
+</table>
+<br>
+<button onclick="location.href='index.html'">
+Home Page
+</button>
+
+<script>
+loadStudents();
+function loadStudents()
+{
+fetch("/students")  //first .then is used to convert response object to JSON format
+                    //second .then is used to extract data from JSON object
+.then(response=>response.json())
+.then(data=>{
+let table=document.getElementById("studentTable");
+table.innerHTML=`
+<tr>
+<th>Student Number</th>
+<th>Name</th>
+<th>Class</th>
+<th>Total Marks</th>
+</tr>`;
+
+data.forEach(student=>{
+table.innerHTML+=`
+<tr>
+<td>${student.sno ?? student.student_id}</td>
+<td>${student.name ?? student.student_name}</td>
+<td>${student.class ?? student.class_name ?? student.course ?? "—"}</td>
+<td>${student.total ?? "—"}</td>
+</tr>
+`;
+});
+});
+}
+</script>
+</body>
+</html>
